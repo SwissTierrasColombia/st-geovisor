@@ -1,0 +1,53 @@
+//
+// Copyright 2021, GeoSolutions Sas.
+// All rights reserved.
+//
+// This source code is licensed under the BSD-style license found in the
+// LICENSE file in the root directory of this source tree.
+//
+
+// **************
+// Theme
+// **************
+
+// #ms-components-theme(@theme-vars) {}
+
+// **************
+// Layout
+// **************
+.ms-wizard {
+    position: absolute;
+    width: 100%;
+    .form-horizontal .control-label {
+        text-align: left;
+        font-weight: normal;
+        > span:after {
+            content: ":"
+        }
+    }
+}
+.ms-wizard  .msSideGrid {
+    margin: 0;
+    &.compact-legend-grid {
+        margin: auto;
+    }
+}
+.ms-wizard > .row{
+    margin: 15px;
+}
+.mapstore-step-title {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.mapstore-step-description {
+    font-size: 14px;
+    font-style: italic;
+}
+
+.mapstore-step-chart {
+    margin: 0 auto;
+    .recharts-wrapper {
+        margin: 0 auto;
+    }
+}
