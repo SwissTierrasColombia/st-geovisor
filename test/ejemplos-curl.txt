@@ -1,0 +1,87 @@
+ //create workspace
+
+ curl "http://geoapi.denebinc.com/create_workspace" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{
+    "name":"geoTestApi"
+}
+EOF
+)
+
+//create store
+
+ curl "http://geoapi.denebinc.com/st_createstore" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{
+"store_name":"geo_testapi",
+"workspace":"geo_testapi",
+"db_name":"armenia",
+"host":"db",
+"port":"5432",
+"schema":"integration",
+"pg_user":"docker",
+"pg_password":"docker"
+}
+EOF
+)
+
+// publish feature type
+
+ curl "http://geoapi.denebinc.com/publish_featuretype" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{
+    "store":"geo_testapi",
+    "workspace":"geo_testapi",
+    "pg_table":"manzanas"
+}
+EOF
+)
+
+//create layer
+
+ curl "http://geoapi.denebinc.com/st_geocreatelayer" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{
+    "name":"layer_testapi",
+    "workspace":"geo_testapi",
+    "store":"geo_testapi",
+    "table":"gc_construccion",
+    "style":"construccion_insumos___b4acb9b0-2f3a-11ec-b6ba-f30df7d17559",
+    "srs":"EPSG:9377"
+}
+EOF
+)
+
+//create map from one workspace with several layers
+
+ curl "http://geoapi.denebinc.com/st_geocreatemap" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{"workspace": "geoapi","map_name": "mapa_apitest","map_description": "map api test","layers": [{"tablename": "construccion_insumos","style": "construccion_insumos___b4acb9b0-2f3a-11ec-b6ba-f30df7d17559"},{"tablename": "manzanas","style": "manzana___c07acc70-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "perimetros","style": "perimtero___43989570-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "predios_integrados","style": "predios___1d5b3240-2f39-11ec-b6ba-f30df7d17559"}, {"tablename": "veredas","style": "veredas___d6dbf990-2f37-11ec-b6ba-f30df7d17559"}]
+}
+EOF
+)
+
+//create fast context with one workspace
+
+ curl "http://geoapi.denebinc.com/st_geocreatefastcontext" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{"name_conn": "conexion","store": "geo_testapitotal","workspace": "geo_testapitotal","dbname": "armenia","host": "db","port": "5432","user": "docker","password": "docker","schema": "integration","layers": [{"tablename": "construccion_insumos","style": "construccion_insumos___b4acb9b0-2f3a-11ec-b6ba-f30df7d17559"},{"tablename": "manzanas","style": "manzana___c07acc70-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "perimetros","style": "perimtero___43989570-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "predios_integrados","style": "predios___1d5b3240-2f39-11ec-b6ba-f30df7d17559"},{"tablename": "veredas","style": "veredas___d6dbf990-2f37-11ec-b6ba-f30df7d17559"}]
+}
+EOF
+)
+
+//create one map from severals workspaces
+ curl "http://geoapi.denebinc.com/st_geocreatemapfewbds" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{"catalog_name": "test","catalog_title": "prueba","map_name": "test","map_description": "mapa","workspace": [{"name": "geoapi","layers": [{"tablename": "construccion_insumos","style": "construccion_insumos___b4acb9b0-2f3a-11ec-b6ba-f30df7d17559"},{"tablename": "manzanas","style": "manzana___c07acc70-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "perimetros","style": "perimtero___43989570-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "predios_integrados","style": "predios___1d5b3240-2f39-11ec-b6ba-f30df7d17559"},{"tablename": "veredas","style": "veredas___d6dbf990-2f37-11ec-b6ba-f30df7d17559"		}]},{"name": "geo_api","layers":[{"tablename": "gc_construccion","style": "polygon"}]
+	}]
+}
+EOF
+)
+
+//create context fast from severals databases and creating one map
+ curl "http://geoapi.denebinc.com/st_geocreatefastcontextfewbds" -H "Accept: application/json" -H "Content-Type:application/json" --data @<(cat <<EOF
+{"connections":[{"name_conn": "conexion","catalog_name": "prueba_fasttest","catalog_title":"prueba_fast","store":"geo","workspace": [{"name": "geo","layers": [{"tablename": "construccion_insumos","style": "construccion_insumos___b4acb9b0-2f3a-11ec-b6ba-f30df7d17559"},{"tablename": "manzanas","style": "manzana___c07acc70-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "perimetros","style": "perimtero___43989570-2f38-11ec-b6ba-f30df7d17559"},{"tablename": "predios_integrados","style": "predios___1d5b3240-2f39-11ec-b6ba-f30df7d17559"},{"tablename": "veredas","style": "veredas___d6dbf990-2f37-11ec-b6ba-f30df7d17559"
+}]}],"dbname": "armenia","host": "db","port": "5432","user": "docker","password": "docker","schema": "integration"},{"name_conn": "conexion2","catalog_name":"prueba_fast2","catalog_title": "prueba_fast2","store": "geo2","workspace": [{"name": "geo2","layers": [{"tablename": "predios_integrados","style": "polygon"}]}],"dbname": "armenia","host": "db","port": "5432","user": "docker","password": "docker","schema": "integration"}],
+"mapacontext": {"workspace": [{"name": "geo","layers": [{"tablename": "construccion_insumos","style":"construccion_insumos___b4acb9b0-2f3a-11ec-b6ba-f30df7d17559"},{"tablename": "manzanas","style":"manzana___c07acc70-2f38-11ec-b6ba-f30df7d17559"},{"tablename":"perimetros","style": "perimtero___43989570-2f38-11ec-b6ba-f30df7d17559"},{
+"tablename": "predios_integrados","style": "predios___1d5b3240-2f39-11ec-b6ba-f30df7d17559"},{"tablename": "veredas","style":"veredas___d6dbf990-2f37-11ec-b6ba-f30df7d17559"}]},{"name": "geo2","layers": [{"tablename": "gc_construccion","style": "polygon"}]}]}
+}
+EOF
+)
+
+
+
+
