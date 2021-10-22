@@ -101,24 +101,7 @@ class MapstoreService:
             av_styles = geoserver_catalog.get_styles()
             print(av_styles)
             avStyles_Arr = ''
-            for avArr in av_styles:
-                if avArr is not None and avArr.name != 'raster':
-                    print(avArr.sld_name)
-                    avStyles_Arr += '''{
-                    "TYPE_NAME": "WMS_1_3_0.Style",
-                        "name": "'''+avArr.name + '''",
-                        "title": "'''+avArr.sld_title + '''",
 
-                    "workspace": {
-                                              "name": "'''+workspace + '''"
-                                          },
-                    "format": "sld",
-                        "languageVersion": {
-                                              "version": "1.0.0"
-                                          },
-                    "filename": "'''+avArr.filename+'''"
-                },'''
-            avStyles_Arr = avStyles_Arr[:-1]
             # print(avStyles_Arr)
             maxX = []
             maxY = []
@@ -140,18 +123,50 @@ class MapstoreService:
                     minX.append(float(bounds[0]))
                     minY.append(float(bounds[2]))
 
+                    for avArr in av_styles:
+                        if avArr is not None and avArr.name == layer['style']:
+                            print(avArr.workspace)
+                            work = ''
+                            if avArr.workspace == None:
+                                work = ''
+                            else:
+                                work = avArr.workspace
+
+                            avStyles_Arr += '''{
+                              "TYPE_NAME": "WMS_1_3_0.Style",
+                                  "name": "'''+avArr.name + '''",
+                                  "title": "'''+avArr.name + '''",
+
+                              "workspace": {
+                                                        "name": "'''+work + '''"
+                                                    },
+                              "format": "sld",
+                                  "languageVersion": {
+                                                        "version": "1.0.0"
+                                                    },
+                              "filename": "'''+avArr.filename+'''"
+                                } '''
+
+                        break
+                    # print(avStyles_Arr)
+                    #avStyles_Arr = avStyles_Arr[:-1]
+
                     # centerx = (bounds[0]) + (bounds[1])) / 2
                     # centery = ((bounds[2])+(bounds[3]))/2
                     postgis_layers += '''{
                                     "id": "''' + layer['tablename'] + '''",
                                     "format": "image/png",
+                                    "search": {
+                                    "url": "'''+Config.GEOSERVER_PUBLIC_URL + '''/wfs",
+                                    "type": "wfs"
+                                  },
                                     "name": "''' + layer['tablename'] + '''",
                                     "description": "''' + layer['tablename'] + '''",
 			                              "style": "'''+layer['style'] + '''",
                                     "availableStyles": ['''+avStyles_Arr+'''],
                                     "title": "''' + layer['tablename'] + '''",
                                     "type": "wms",
-                                    "url": "''' + url_layer + '''",
+                                    "url": "''' + Config.GEOSERVER_PUBLIC_URL + '''/wms",
                                     "bbox": {
                                       "crs": "''' + projection + '''",
                                       "bounds": {
@@ -345,28 +360,10 @@ class MapstoreService:
                               },
                               "catalogServices": {
                                 "services": {
-                                  "Demo CSW Service": {
-                                    "url": "https://demo.geo-solutions.it/geoserver/csw",
-                                    "type": "csw",
-                                    "title": "Demo CSW Service",
-                                    "autoload": true
-                                  },
-                                  "Demo WMS Service": {
-                                    "url": "https://demo.geo-solutions.it/geoserver/wms",
+                                 "GeoAPI WMS Service": {
+                                    "url": "''' + Config.GEOSERVER_PUBLIC_URL + '''/wms",
                                     "type": "wms",
-                                    "title": "Demo WMS Service",
-                                    "autoload": false
-                                  },
-                                  "Demo WMTS Service": {
-                                    "url": "https://demo.geo-solutions.it/geoserver/gwc/service/wmts",
-                                    "type": "wmts",
-                                    "title": "Demo WMTS Service",
-                                    "autoload": false
-                                  },
-                                  "''' + catalog_name + '''": {
-                                    "url": "''' + catalog_url + '''",
-                                    "type": "wms",
-                                    "title": "''' + catalog_title + '''",
+                                    "title": "WMS Service",
                                     "autoload": false,
                                     "showAdvancedSettings": false,
                                     "showTemplate": false,
@@ -374,7 +371,7 @@ class MapstoreService:
                                     "metadataTemplate": "<p></p>"
                                   }
                                 },
-                                "selectedService": "''' + catalog_name + '''"
+                                "selectedService": "GeoAPI WMS Service"
                               },
                               "widgetsConfig": {
                                 "layouts": {
@@ -413,17 +410,16 @@ class MapstoreService:
             url_layer = Config.GEOSERVER_GC_URL
             postgis_layers = ''
             for workspace in workspaces:
-                print(workspace['layers'])
+                # print(workspace['layers'])
                 for avArr in av_styles:
-                    if avArr is not None and avArr.name != 'raster':
-                        print(avArr.sld_name)
+                    if avArr is not None:
+                        print(avArr.name)
                         avStyles_Arr += '''{
                         "TYPE_NAME": "WMS_1_3_0.Style",
-                            "name": "'''+avArr.name + '''",
-                            "title": "'''+avArr.sld_title + '''",
-
+                            "name": "'''+avArr.name + '''",                            
+                          "title": "'''+avArr.name + '''",
                         "workspace": {
-                                                  "name": "'''+workspace['name'] + '''"
+                                                  "name": "'''+avArr.workspace + '''"
                                               },
                         "format": "sld",
                             "languageVersion": {

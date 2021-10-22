@@ -1,10 +1,26 @@
-version: '3.1'
+version: '3.9'
 
 volumes:
    geo-db-data:
    pgadmin-data:
 
 services:
+   db:
+      image: kartoza/postgis:${POSTGIS_VERSION_TAG}
+      volumes:
+         - geo-db-data:/var/lib/postgresql
+      ports:
+        - ${POSTGRES_PORT}:5432
+      environment:
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASS=${POSTGRES_PASS}
+        - ALLOW_IP_RANGE=${ALLOW_IP_RANGE}
+        - FORCE_SSL=TRUE
+        - RECREATE_DATADIR=FALSE
+      restart: on-failure
+      healthcheck:
+        test: "exit 0"
 
    geoserver:
       image: kartoza/geoserver:${GS_VERSION}
@@ -21,11 +37,24 @@ services:
         - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
         - INITIAL_MEMORY=${INITIAL_MEMORY}
         - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+      depends_on:
+        db:
+          condition: service_healthy
       healthcheck:
         test: curl --fail -s http://localhost:8080/ || exit 1
         interval: 1m30s
         timeout: 10s
         retries: 3
+
+   pgadmin:
+      image: dpage/pgadmin4
+      volumes:
+         - pgadmin-data:/var/lib/pgadmin
+      ports:
+        - 5050:80  
+      environment:
+        - PGADMIN_DEFAULT_EMAIL=aranguren@denebinc.com
+        - PGADMIN_DEFAULT_PASSWORD=SuperSecret
 
 
 
@@ -33,7 +62,7 @@ services:
            #      build: ./st-geovisor
       image: geosolutionsit/mapstore2
       ports:
-        - ${MAPSTORE_PORT}:8080  
+        - 8080:8080  
 
    
 
@@ -41,7 +70,7 @@ services:
       build: ./st-geoapi
       image: st-geoapi
       ports:
-        - ${GEOAPI_PORT}:5000  
+        - 5000:5000  
       environment:
         - GEOSERVER_URL=${GEOSERVER_URL}
         - GEOSERVER_GC_URL=${GEOSERVER_GC_URL}
@@ -53,3 +82,9 @@ services:
         - MAPSTORE_USER=${MAPSTORE_USER}
         - MAPSTORE_PASSWD=${MAPSTORE_USER}
 
+   nginx:
+      image: nginx:latest
+      ports:
+        - "80:80"
+        - "443:443"
+      restart: on-failure

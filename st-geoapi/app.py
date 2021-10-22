@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return jsonify({'OrchesterAPI': True}), 200
+    return jsonify({'GeoApi': True}), 200
 
 
 @app.route('/layers')
@@ -416,8 +416,10 @@ def st_geocreatefastcontext():
         access_token, str(there_is_map['id']), 'everyone')
     if res and res.status_code == 204:
         result['permissions'] = 'everyone'
-
-    return jsonify({'st_geocreatefastcontext': result}), 200
+    
+    idmap=result['map_created']['id']
+    mapurl=Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+    return jsonify({'st_geocreatefastcontext': mapurl}), 200
 
 
 @app.route('/st_geocreatefastcontextfewbds', methods=["POST"])
@@ -513,7 +515,10 @@ def st_geocreatefastcontextfewbds():
     if res and res.status_code == 204:
         result['permissions'] = 'everyone'
 
-    return jsonify({'st_geocreatefastcontext': result}), 200
+    idmap=result['map_created']['id']
+    mapurl=Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+    return jsonify({'st_geocreatefastcontext': mapurl}), 200
+#    return jsonify({'st_geocreatefastcontext': result}), 200
 
 
 if __name__ == '__main__':
