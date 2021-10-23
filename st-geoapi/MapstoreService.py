@@ -149,7 +149,7 @@ class MapstoreService:
 
                         break
                     # print(avStyles_Arr)
-                    #avStyles_Arr = avStyles_Arr[:-1]
+                    # avStyles_Arr = avStyles_Arr[:-1]
 
                     # centerx = (bounds[0]) + (bounds[1])) / 2
                     # centery = ((bounds[2])+(bounds[3]))/2
@@ -164,7 +164,7 @@ class MapstoreService:
                                     "description": "''' + layer['tablename'] + '''",
 			                              "style": "'''+layer['style'] + '''",
                                     "availableStyles": ['''+avStyles_Arr+'''],
-                                    "title": "''' + layer['tablename'] + '''",
+                                    "title": "''' + layer['title'] + '''",
                                     "type": "wms",
                                     "url": "''' + Config.GEOSERVER_PUBLIC_URL + '''/wms",
                                     "bbox": {
@@ -409,34 +409,18 @@ class MapstoreService:
             minY = []
             url_layer = Config.GEOSERVER_GC_URL
             postgis_layers = ''
-            for workspace in workspaces:
-                # print(workspace['layers'])
-                for avArr in av_styles:
-                    if avArr is not None:
-                        print(avArr.name)
-                        avStyles_Arr += '''{
-                        "TYPE_NAME": "WMS_1_3_0.Style",
-                            "name": "'''+avArr.name + '''",                            
-                          "title": "'''+avArr.name + '''",
-                        "workspace": {
-                                                  "name": "'''+avArr.workspace + '''"
-                                              },
-                        "format": "sld",
-                            "languageVersion": {
-                                                  "version": "1.0.0"
-                                              },
-                        "filename": "'''+avArr.filename+'''"
-                    },'''
-            avStyles_Arr = avStyles_Arr[:-1]
+
             for workspace in workspaces:
 
                 for layer in workspace['layers']:
+
                     ly = geoserver_catalog.getLayer(
                         workspace['name'], layer['tablename'])
+
                     if ly:
                         layer_data = geoserver_catalog.getLayer(
                             workspace['name'],  layer['tablename'])  # Return Layer data
-
+                        print(layer_data)
                         projection = layer_data.resource.projection
                         bounds = layer_data.resource.latlon_bbox
                         maxX.append(float(bounds[1]))
@@ -447,46 +431,51 @@ class MapstoreService:
                         # centerx = (bounds[0]) + (bounds[1])) / 2
                         # centery = ((bounds[2])+(bounds[3]))/2
                         postgis_layers += '''{
-                                        "id": "''' + layer['tablename'] + '''",
-                                        "format": "image/png",
-                                        "name": "''' + layer['tablename'] + '''",
-                                        "description": "''' + layer['tablename'] + '''",
-                                        "style": "'''+layer['style'] + '''",
-                                        "availableStyles": ['''+avStyles_Arr+'''],
-                                        "title": "''' + layer['tablename'] + '''",
-                                        "type": "wms",
-                                        "url": "''' + url_layer + '''",
-                                        "bbox": {
-                                          "crs": "''' + projection + '''",
-                                          "bounds": {
-                                            "minx": "''' + str(bounds[0]) + '''",
-                                            "miny": "''' + str(bounds[2]) + '''",
-                                            "maxx": "''' + str(bounds[1]) + '''",
-                                            "maxy": "''' + str(bounds[3]) + '''"
-                                          }
-                                        },
-                                        "visibility": true,
-                                        "singleTile": false,
-                                        "allowedSRS": {
-                                          "''' + projection + '''": true,
-                                          "EPSG:3785":true,
-                                          "EPSG:3857":true,
-                                          "EPSG:4269":true,
-                                          "EPSG:4326":true,
-                                          "EPSG:102113":true,
-                                          "EPSG:900913":true
-                                        },
+                                    "id": "''' + layer['tablename'] + '''",
+                                    "format": "image/png",
+                                    "search": {
+                                    "url": "'''+Config.GEOSERVER_PUBLIC_URL + '''/wfs",
+                                    "type": "wfs"
+                                  },
+                                    "name": "''' + layer['tablename'] + '''",
+                                    "description": "''' + layer['tablename'] + '''",
+			                              "style": "'''+layer['style'] + '''",
+                                    "availableStyles": ['''+avStyles_Arr+'''],
+                                    "title": "''' + layer['title'] + '''",
+                                    "type": "wms",
+                                    "url": "''' + Config.GEOSERVER_PUBLIC_URL + '''/wms",
+                                    "bbox": {
+                                      "crs": "''' + projection + '''",
+                                      "bounds": {
+                                        "minx": "''' + str(bounds[0]) + '''",
+                                        "miny": "''' + str(bounds[2]) + '''",
+                                        "maxx": "''' + str(bounds[1]) + '''",
+                                        "maxy": "''' + str(bounds[3]) + '''"
+                                      }
+                                    },
+                                    "visibility": true,
+                                    "singleTile": false,
+                                    "allowedSRS": {
+                                      "''' + projection + '''": true,
+                                      "EPSG:3785":true,
+                                      "EPSG:3857":true,
+                                      "EPSG:4269":true,
+                                      "EPSG:4326":true,
+                                      "EPSG:102113":true,
+                                      "EPSG:900913":true
+                                    },
 
-                                        "dimensions": [],
-                                        "hideLoading": false,
-                                        "handleClickOnLayer": false,
-                                        "catalogURL": null,
-                                        "useForElevation": false,
-                                        "hidden": false,
-                                        "params": {}
-                                      },'''
+                                    "dimensions": [],
+                                    "hideLoading": false,
+                                    "handleClickOnLayer": false,
+                                    "catalogURL": null,
+                                    "useForElevation": false,
+                                    "hidden": false,
+                                    "params": {}
+                                  },'''
             postgis_layers = postgis_layers[:-1]  # Remove last comma
             print(maxX)
+
             maxX_total = maxX[0]
             maxY_total = maxY[0]
             minX_total = minX[0]
@@ -516,183 +505,165 @@ class MapstoreService:
                 'Content-Type': 'application/xml'
             }
             payload = '''
-                    <Resource>
-                      <description><![CDATA[''' + mapdescription + ''']]></description>
-                      <metadata></metadata>
-                      <name><![CDATA[''' + mapname + ''']]></name>
-                      <category>
-                          <name>MAP</name>
-                      </category>
-                      <Attributes>
-                          <attribute>
-                              <name>owner</name>
-                              <value>admin</value>
-                              <type>STRING</type>
-                          </attribute>
-                      </Attributes>
-                      <store>
-                          <data>
-                              <![CDATA[{
-                                "version": 2,
-                                "map": {
-                                  "center": {
-                                    "x": ''' + str(divx)+''',
-                                    "y": '''+str(divy) + ''',
-                                    "crs": "EPSG:4326"
-                                  },
-                                  "maxExtent": [
+                  <Resource>
+                    <description><![CDATA[''' + mapdescription + ''']]></description>
+                    <metadata></metadata>
+                    <name><![CDATA[''' + mapname + ''']]></name>
+                    <category>
+                        <name>MAP</name>
+                    </category>
+                    <Attributes>
+                        <attribute>
+                            <name>owner</name>
+                            <value>admin</value>
+                            <type>STRING</type>
+                        </attribute>
+                    </Attributes>
+                    <store>
+                        <data>
+                            <![CDATA[{
+                              "version": 2,
+                              "map": {
+                                "center": {
+                                   "x": ''' + str(divx)+''',
+                                  "y": '''+str(divy) + ''',
+                                  "crs": "EPSG:4326"
+                                },
+                                "maxExtent": [
+                                 -20037508.34,
                                   -20037508.34,
-                                    -20037508.34,
-                                    20037508.34,
-                                    20037508.34
-                                  ],
-                                  "projection": "EPSG:900913",
-                                  "units": "m",
-                                  "zoom": 11,
-                                  "mapOptions": {},
-                                  "layers": [
-                                    {
-                                      "id": "mapnik__0",
-                                      "group": "background",
-                                      "source": "osm",
-                                      "name": "mapnik",
-                                      "title": "Open Street Map",
-                                      "type": "osm",
-                                      "visibility": true,
-                                      "singleTile": false,
-                                      "dimensions": [],
-                                      "hideLoading": false,
-                                      "handleClickOnLayer": false,
-                                      "useForElevation": false,
-                                      "hidden": false
-                                    },
-                                    {
-                                      "id": "Night2012__1",
-                                      "group": "background",
-                                      "source": "nasagibs",
-                                      "name": "Night2012",
-                                      "provider": "NASAGIBS.ViirsEarthAtNight2012",
-                                      "title": "NASAGIBS Night 2012",
-                                      "type": "tileprovider",
-                                      "visibility": false,
-                                      "singleTile": false,
-                                      "dimensions": [],
-                                      "hideLoading": false,
-                                      "handleClickOnLayer": false,
-                                      "useForElevation": false,
-                                      "hidden": false
-                                    },
-                                    {
-                                      "id": "OpenTopoMap__2",
-                                      "group": "background",
-                                      "source": "OpenTopoMap",
-                                      "name": "OpenTopoMap",
-                                      "provider": "OpenTopoMap",
-                                      "title": "OpenTopoMap",
-                                      "type": "tileprovider",
-                                      "visibility": false,
-                                      "singleTile": false,
-                                      "dimensions": [],
-                                      "hideLoading": false,
-                                      "handleClickOnLayer": false,
-                                      "useForElevation": false,
-                                      "hidden": false
-                                    },
-                                    {
-                                      "id": "s2cloudless:s2cloudless__3",
-                                      "format": "image/jpeg",
-                                      "group": "background",
-                                      "source": "s2cloudless",
-                                      "name": "s2cloudless:s2cloudless",
-                                      "opacity": 1,
-                                      "title": "Sentinel 2 Cloudless",
-                                      "type": "wms",
-                                      "url": [
-                                        "https://1maps.geo-solutions.it/geoserver/wms",
-                                        "https://2maps.geo-solutions.it/geoserver/wms",
-                                        "https://3maps.geo-solutions.it/geoserver/wms",
-                                        "https://4maps.geo-solutions.it/geoserver/wms",
-                                        "https://5maps.geo-solutions.it/geoserver/wms",
-                                        "https://6maps.geo-solutions.it/geoserver/wms"
-                                      ],
-                                      "visibility": false,
-                                      "singleTile": false,
-                                      "dimensions": [],
-                                      "hideLoading": false,
-                                      "handleClickOnLayer": false,
-                                      "useForElevation": false,
-                                      "hidden": false
-                                    },
-                                    {
-                                      "id": "undefined__4",
-                                      "group": "background",
-                                      "source": "ol",
-                                      "title": "Empty Background",
-                                      "type": "empty",
-                                      "visibility": false,
-                                      "singleTile": false,
-                                      "dimensions": [],
-                                      "hideLoading": false,
-                                      "handleClickOnLayer": false,
-                                      "useForElevation": false,
-                                      "hidden": false
-                                    },''' + postgis_layers + '''
-                                  ],
-                                  "groups": [
-                                    {
-                                      "id": "Default",
-                                      "title": "Default",
-                                      "expanded": true
-                                    }
-                                  ],
-                                  "backgrounds": []
-                                },
-                                "catalogServices": {
-                                  "services": {
-                                    "Demo CSW Service": {
-                                      "url": "https://demo.geo-solutions.it/geoserver/csw",
-                                      "type": "csw",
-                                      "title": "Demo CSW Service",
-                                      "autoload": true
-                                    },
-                                    "Demo WMS Service": {
-                                      "url": "https://demo.geo-solutions.it/geoserver/wms",
-                                      "type": "wms",
-                                      "title": "Demo WMS Service",
-                                      "autoload": false
-                                    },
-                                    "Demo WMTS Service": {
-                                      "url": "https://demo.geo-solutions.it/geoserver/gwc/service/wmts",
-                                      "type": "wmts",
-                                      "title": "Demo WMTS Service",
-                                      "autoload": false
-                                    },
-                                    "''' + catalog_name + '''": {
-                                      "url": "''' + catalog_url + '''",
-                                      "type": "wms",
-                                      "title": "''' + catalog_title + '''",
-                                      "autoload": false,
-                                      "showAdvancedSettings": false,
-                                      "showTemplate": false,
-                                      "hideThumbnail": false,
-                                      "metadataTemplate": "<p></p>"
-                                    }
+                                  20037508.34,
+                                  20037508.34
+                                ],
+                                "projection": "EPSG:900913",
+                                "units": "m",
+                                "zoom": 11,
+                                "mapOptions": {},
+                                "layers": [
+                                  {
+                                    "id": "mapnik__0",
+                                    "group": "background",
+                                    "source": "osm",
+                                    "name": "mapnik",
+                                    "title": "Open Street Map",
+                                    "type": "osm",
+                                    "visibility": true,
+                                    "singleTile": false,
+                                    "dimensions": [],
+                                    "hideLoading": false,
+                                    "handleClickOnLayer": false,
+                                    "useForElevation": false,
+                                    "hidden": false
                                   },
-                                  "selectedService": "''' + catalog_name + '''"
-                                },
-                                "widgetsConfig": {
-                                  "layouts": {
-                                    "md": [],
-                                    "xxs": []
+                                  {
+                                    "id": "Night2012__1",
+                                    "group": "background",
+                                    "source": "nasagibs",
+                                    "name": "Night2012",
+                                    "provider": "NASAGIBS.ViirsEarthAtNight2012",
+                                    "title": "NASAGIBS Night 2012",
+                                    "type": "tileprovider",
+                                    "visibility": false,
+                                    "singleTile": false,
+                                    "dimensions": [],
+                                    "hideLoading": false,
+                                    "handleClickOnLayer": false,
+                                    "useForElevation": false,
+                                    "hidden": false
+                                  },
+                                  {
+                                    "id": "OpenTopoMap__2",
+                                    "group": "background",
+                                    "source": "OpenTopoMap",
+                                    "name": "OpenTopoMap",
+                                    "provider": "OpenTopoMap",
+                                    "title": "OpenTopoMap",
+                                    "type": "tileprovider",
+                                    "visibility": false,
+                                    "singleTile": false,
+                                    "dimensions": [],
+                                    "hideLoading": false,
+                                    "handleClickOnLayer": false,
+                                    "useForElevation": false,
+                                    "hidden": false
+                                  },
+                                  {
+                                    "id": "s2cloudless:s2cloudless__3",
+                                    "format": "image/jpeg",
+                                    "group": "background",
+                                    "source": "s2cloudless",
+                                    "name": "s2cloudless:s2cloudless",
+                                    "opacity": 1,
+                                    "title": "Sentinel 2 Cloudless",
+                                    "type": "wms",
+                                    "url": [
+                                      "https://1maps.geo-solutions.it/geoserver/wms",
+                                      "https://2maps.geo-solutions.it/geoserver/wms",
+                                      "https://3maps.geo-solutions.it/geoserver/wms",
+                                      "https://4maps.geo-solutions.it/geoserver/wms",
+                                      "https://5maps.geo-solutions.it/geoserver/wms",
+                                      "https://6maps.geo-solutions.it/geoserver/wms"
+                                    ],
+                                    "visibility": false,
+                                    "singleTile": false,
+                                    "dimensions": [],
+                                    "hideLoading": false,
+                                    "handleClickOnLayer": false,
+                                    "useForElevation": false,
+                                    "hidden": false
+                                  },
+                                  {
+                                    "id": "undefined__4",
+                                    "group": "background",
+                                    "source": "ol",
+                                    "title": "Empty Background",
+                                    "type": "empty",
+                                    "visibility": false,
+                                    "singleTile": false,
+                                    "dimensions": [],
+                                    "hideLoading": false,
+                                    "handleClickOnLayer": false,
+                                    "useForElevation": false,
+                                    "hidden": false
+                                  },''' + postgis_layers + '''
+                                ],
+                                "groups": [
+                                  {
+                                    "id": "Default",
+                                    "title": "Default",
+                                    "expanded": true
+                                  }
+                                ],
+                                "backgrounds": []
+                              },
+                              "catalogServices": {
+                                "services": {
+                                 "GeoAPI WMS Service": {
+                                    "url": "''' + Config.GEOSERVER_PUBLIC_URL + '''/wms",
+                                    "type": "wms",
+                                    "title": "WMS Service",
+                                    "autoload": false,
+                                    "showAdvancedSettings": false,
+                                    "showTemplate": false,
+                                    "hideThumbnail": false,
+                                    "metadataTemplate": "<p></p>"
                                   }
                                 },
-                                "mapInfoConfiguration": {},
-                                "dimensionData": {},
-                                "timelineData": {}
-                            }]]></data>
-                      </store>
-                  </Resource>
-                  '''
+                                "selectedService": "GeoAPI WMS Service"
+                              },
+                              "widgetsConfig": {
+                                "layouts": {
+                                  "md": [],
+                                  "xxs": []
+                                }
+                              },
+                              "mapInfoConfiguration": {},
+                              "dimensionData": {},
+                              "timelineData": {}
+                           }]]></data>
+                    </store>
+                </Resource>
+                '''
 
             print(payload)
             response = requests.post(Config.MAPSTORE_URL + "/resources",

@@ -9,4 +9,6 @@ web/.classpath
 web/.project
 backend/.classpath
 backend/.project
-
+.env
+st-geoapi/geo_api.postman_collection.json
+st-geoapi/tester_script.py

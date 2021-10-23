@@ -246,7 +246,6 @@ def st_geocreatemap():
     map_name = json['map_name']
     map_description = json['map_description']
     pgtables = json['layers']
-
     mapstore_service = MapstoreService()
     login_response = mapstore_service.login()
     access_token = login_response['access_token']
@@ -416,9 +415,9 @@ def st_geocreatefastcontext():
         access_token, str(there_is_map['id']), 'everyone')
     if res and res.status_code == 204:
         result['permissions'] = 'everyone'
-    
-    idmap=result['map_created']['id']
-    mapurl=Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+    idmap = result['map_created']['id']
+    mapurl = Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+
     return jsonify({'st_geocreatefastcontext': mapurl}), 200
 
 
@@ -515,10 +514,10 @@ def st_geocreatefastcontextfewbds():
     if res and res.status_code == 204:
         result['permissions'] = 'everyone'
 
-    idmap=result['map_created']['id']
-    mapurl=Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
-    return jsonify({'st_geocreatefastcontext': mapurl}), 200
-#    return jsonify({'st_geocreatefastcontext': result}), 200
+    idmap = result['map_created']['id']
+    mapurl = Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+
+    return jsonify({'st_geocreatefastcontext_multiplebds': mapurl}), 200
 
 
 if __name__ == '__main__':
