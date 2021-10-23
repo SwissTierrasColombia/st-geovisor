@@ -282,7 +282,10 @@ def st_geocreatemap():
             access_token, str(my_new_map['id']), 'everyone')
         if res and res.status_code == 204:
             result['permissions'] = 'everyone'
-        return jsonify({'st_geocreatemap': result}), 200
+        idmap = result['map_created']['id']
+        mapurl = Config.MAPSTORE_PUBLIC_URL+'/#/viewer/openlayers/'+str(idmap)
+
+        return jsonify({'st_geocreatemap': mapurl}), 200
 
 
 @app.route("/st_geocreatemapfewbds", methods=["POST"])
@@ -328,7 +331,10 @@ def st_geocreatemapfewbds():
             access_token, str(my_new_map['id']), 'everyone')
         if res and res.status_code == 204:
             result['permissions'] = 'everyone'
-        return jsonify({'st_geocreatemap': result}), 200
+        idmap = result['map_created']['id']
+        mapurl = Config.MAPSTORE_PUBLIC_URL+'/#/viewer/openlayers/'+str(idmap)
+
+        return jsonify({'st_geocreatemap': mapurl}), 200
 
 
 @app.route('/st_geocreatefastcontext', methods=["POST"])
@@ -416,7 +422,7 @@ def st_geocreatefastcontext():
     if res and res.status_code == 204:
         result['permissions'] = 'everyone'
     idmap = result['map_created']['id']
-    mapurl = Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+    mapurl = Config.MAPSTORE_PUBLIC_URL+'/#/viewer/openlayers/'+str(idmap)
 
     return jsonify({'st_geocreatefastcontext': mapurl}), 200
 
@@ -515,7 +521,7 @@ def st_geocreatefastcontextfewbds():
         result['permissions'] = 'everyone'
 
     idmap = result['map_created']['id']
-    mapurl = Config.MAPSTORE_PUBLIC_URL+'#/viewer/openlayers/'+str(idmap)
+    mapurl = Config.MAPSTORE_PUBLIC_URL+'/#/viewer/openlayers/'+str(idmap)
 
     return jsonify({'st_geocreatefastcontext_multiplebds': mapurl}), 200
 
