@@ -7,6 +7,9 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Single symbol</se:Name>
+          <se:MinScaleDenominator>1000</se:MinScaleDenominator>
+          <se:MaxScaleDenominator>5000</se:MaxScaleDenominator>
+
           <se:LineSymbolizer>
             <se:Stroke>
               <se:SvgParameter name="stroke">#e41a1c</se:SvgParameter>

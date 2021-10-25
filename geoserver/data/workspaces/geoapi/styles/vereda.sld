@@ -11,6 +11,8 @@
       <Title>Vereda</Title>
       <FeatureTypeStyle>
         <Rule>
+          <MinScaleDenominator>10000</MinScaleDenominator>
+          <MaxScaleDenominator>50000</MaxScaleDenominator>
           <PolygonSymbolizer>
             <Fill>
               <CssParameter name="fill">#000000</CssParameter>

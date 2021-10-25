@@ -11,6 +11,8 @@
       <Title>Manzana</Title>
       <FeatureTypeStyle>
         <Rule>
+          <MinScaleDenominator>2000</MinScaleDenominator>
+          <MaxScaleDenominator>10000</MaxScaleDenominator>
           <PolygonSymbolizer>
             <Fill>
               <CssParameter name="fill">#000000</CssParameter>
