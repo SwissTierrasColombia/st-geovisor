@@ -393,8 +393,7 @@ class MapstoreService:
                                      data=payload)
             return response
         except Exception as e:
-          print(e)
-          return e.args[0]
+            return e.args[0]
 
     def create_mapmultiplebds(self, access_token, mapname, mapdescription, workspaces, catalog_name, catalog_title):
         try:
