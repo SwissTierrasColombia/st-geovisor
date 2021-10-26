@@ -196,7 +196,8 @@ class MapstoreService:
                                     "hidden": false,
                                     "params": {}
                                   },'''
-            postgis_layers = postgis_layers[:-1]  # Remove last comma
+            postgis_layers = (
+                postgis_layers[:-1])  # Remove last comma
             print(maxX)
             maxX_total = maxX[0]
             maxY_total = maxY[0]
@@ -224,7 +225,7 @@ class MapstoreService:
             print(divy)
             headers = {
                 'Authorization': 'Bearer ' + access_token,
-                'Content-Type': 'application/xml'
+                'Content-Type': 'application/xml; charset=utf-8'
             }
             payload = '''
                   <Resource>
@@ -390,7 +391,7 @@ class MapstoreService:
             print(payload)
             response = requests.post(Config.MAPSTORE_URL + "/resources",
                                      headers=headers,
-                                     data=payload)
+                                     data=payload.encode('utf-8'))
             return response
         except Exception as e:
             return e.args[0]
@@ -502,7 +503,7 @@ class MapstoreService:
             print(divy)
             headers = {
                 'Authorization': 'Bearer ' + access_token,
-                'Content-Type': 'application/xml'
+                'Content-Type': 'application/xml;; charset=utf-8'
             }
             payload = '''
                   <Resource>
@@ -668,7 +669,7 @@ class MapstoreService:
             print(payload)
             response = requests.post(Config.MAPSTORE_URL + "/resources",
                                      headers=headers,
-                                     data=payload)
+                                     data=payload.encode('utf-8'))
             return response
         except Exception as e:
             return e.args[0]

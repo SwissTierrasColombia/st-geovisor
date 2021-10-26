@@ -253,6 +253,9 @@ def st_geocreatemap():
     geoserver_catalog = GeoserverCatalog()
     wk = geoserver_catalog.getWorkspace(workspace)
 
+    if wk is None:
+        return jsonify({'Workspace not exists': 'Please check workspace name'}), 200
+
     if not access_token:
         return jsonify({'Mapstore not reached': 'Please check Mapstore credentials'}), 200
 
@@ -277,13 +280,16 @@ def st_geocreatemap():
         mr = maps['results']
         my_new_map = mapstore_service.getMapByName(map_name, mr)
         result = {'map_created': my_new_map}
-
-        res = mapstore_service.modify_map_permissions(
-            access_token, str(my_new_map['id']), 'everyone')
-        if res and res.status_code == 204:
-            result['permissions'] = 'everyone'
-        idmap = result['map_created']['id']
-        mapurl = Config.MAPSTORE_PUBLIC_URL+'/#/viewer/openlayers/'+str(idmap)
+        if my_new_map is not None:
+            res = mapstore_service.modify_map_permissions(
+                access_token, str(my_new_map['id']), 'everyone')
+            if res and res.status_code == 204:
+                result['permissions'] = 'everyone'
+            idmap = result['map_created']['id']
+            mapurl = Config.MAPSTORE_PUBLIC_URL + \
+                '/#/viewer/openlayers/' + str(idmap)
+        else:
+            return jsonify({'map not created': rr}), 200
 
         return jsonify({'st_geocreatemap': mapurl}), 200
 
@@ -296,7 +302,7 @@ def st_geocreatemapfewbds():
     map_description = json['map_description']
     catalog_name = json['catalog_name']
     catalog_title = json['catalog_title']
-    #pgtables = json['layers']
+    # pgtables = json['layers']
 
     mapstore_service = MapstoreService()
     login_response = mapstore_service.login()
@@ -326,13 +332,17 @@ def st_geocreatemapfewbds():
         mr = maps['results']
         my_new_map = mapstore_service.getMapByName(map_name, mr)
         result = {'map_created': my_new_map}
-
-        res = mapstore_service.modify_map_permissions(
-            access_token, str(my_new_map['id']), 'everyone')
-        if res and res.status_code == 204:
-            result['permissions'] = 'everyone'
-        idmap = result['map_created']['id']
-        mapurl = Config.MAPSTORE_PUBLIC_URL+'/#/viewer/openlayers/'+str(idmap)
+        mapurl = ''
+        if my_new_map is not None:
+            res = mapstore_service.modify_map_permissions(
+                access_token, str(my_new_map['id']), 'everyone')
+            if res and res.status_code == 204:
+                result['permissions'] = 'everyone'
+            idmap = result['map_created']['id']
+            mapurl = Config.MAPSTORE_PUBLIC_URL + \
+                '/#/viewer/openlayers/' + str(idmap)
+        else:
+            return jsonify({'map not created': rr}), 200
 
         return jsonify({'st_geocreatemap': mapurl}), 200
 
@@ -432,7 +442,10 @@ def st_geocreatefastcontextfewbds():
     result = {'result': False}
     json = request.get_json()
     conections = json['connections']
-    mapcontext = json['mapacontext']
+    mapcontext = []
+    map_name = json['map_name']
+    map_description = json['map_description']
+
     for conection in conections:
         name_conn = conection['name_conn']
         store = conection['store']
@@ -445,9 +458,10 @@ def st_geocreatefastcontextfewbds():
         user = conection['user']
         password = conection['password']
         schema = conection['schema']
+
         geoserver_catalog = GeoserverCatalog()
         geoserver_instance = GeoserverRestService()
-        #pgtables = conection['layers']
+        # pgtables = conection['layers']
         for workspace in workspaces:
             # Workspace
             wk = geoserver_catalog.getWorkspace(workspace)
@@ -455,7 +469,7 @@ def st_geocreatefastcontextfewbds():
                 print('Workspace not exist, creating...')
                 print(workspace['name'])
                 wk = geoserver_instance.create_workspace(workspace['name'])
-                #result['workspace'] = wk.name
+                # result['workspace'] = wk.name
 
             # DataStore
             stores = geoserver_catalog.get_stores(store, workspace['name'])
@@ -484,7 +498,8 @@ def st_geocreatefastcontextfewbds():
                     geoserver_catalog.set_layer_style(
                         workspace['name'], pgtable['tablename'], pgtable['style'])
                     print('Layer from Postgis created')
-
+            mapcontext.append(workspace)
+    print(mapcontext)
     mapstore_service = MapstoreService()
     login_response = mapstore_service.login()
     access_token = login_response['access_token']
@@ -494,7 +509,7 @@ def st_geocreatefastcontextfewbds():
 
     maps = mapstore_service.get_maps(access_token)
     mr = maps['results']
-    there_is_map = mapstore_service.getMapByName(catalog_name, mr)
+    there_is_map = mapstore_service.getMapByName(map_name, mr)
 
     if there_is_map:
         result = {'map_exist': there_is_map}
@@ -502,17 +517,19 @@ def st_geocreatefastcontextfewbds():
 
     if access_token:
         mapstore_service.create_mapmultiplebds(access_token,
-                                               catalog_name,  # Catalog name
-                                               catalog_title,  # Catalog title
+                                               map_name,  # Map name
+                                               map_description,  # Map description
+                                               # Catalog title
                                                # Tables from existing databases sent from client as POST
-                                               mapcontext['workspace'],
-                                               catalog_name,  # Map name
-                                               catalog_name  # Map description
+                                               mapcontext,
+                                               map_name,  # Map name
+                                               map_description
+
                                                )
 
     maps = mapstore_service.get_maps(access_token)
     mr = maps['results']
-    there_is_map = mapstore_service.getMapByName(catalog_name, mr)
+    there_is_map = mapstore_service.getMapByName(map_name, mr)
     result = {'map_created': there_is_map}
 
     res = mapstore_service.modify_map_permissions(

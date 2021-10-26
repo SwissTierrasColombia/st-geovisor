@@ -23,5 +23,15 @@
 
     docker-compose up --build -d
 
+6.- Si desea actualizar la API
+
+    docker-compose stop geoapi
+    docker-compose rm geoapi
+    docker-compose build geoapi
+    docker-compose up --no-start geoapi
+    docker-compose start geoapi
+    docker-compose logs geoapi
+
+
 6.- Good luck !!
 

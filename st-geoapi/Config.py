@@ -3,6 +3,7 @@ import os
 
 class Config(object):
     DEBUG = False
+    JSON_AS_ASCII = False
     GEOSERVER_URL = os.environ.get("GEOSERVER_URL")
     GEOSERVER_GC_URL = os.environ.get("GEOSERVER_GC_URL")
     GEOSERVER_USER = os.environ.get("GEOSERVER_USER")
